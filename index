@@ -1,0 +1,1432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hesap Makinesi, Gizli Galeri, Not Defteri ve Çöp Kutusu</title>
+    <style>
+        /* CSS kodları burada değişmedi, eski halini koruyor */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #121212;
+            color: #ffffff;
+            margin: 0;
+            padding: 20px;
+        }
+        h1, p, h2 {
+            color: #ffffff;
+            text-align: center;
+        }
+        .calculator, .secret-container, .notes-page, .trash-page {
+            background-color: #1e1e1e;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
+            text-align: center;
+            display: none;
+            max-width: 800px;
+            margin: 20px auto;
+        }
+        .calculator {
+            display: block; /* Hesap makinesi başlangıçta açık */
+        }
+        input[type="number"], input[type="file"], input[type="text"] {
+            padding: 10px;
+            margin: 10px 5px;
+            border: 1px solid #333;
+            border-radius: 4px;
+            width: 80px;
+            background-color: #2d2d2d;
+            color: white;
+        }
+        input[type="text"] {
+            width: calc(100% - 22px);
+            max-width: 300px;
+        }
+
+        button {
+            padding: 10px 15px;
+            margin: 5px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        button:hover {
+            background-color: #0056b3;
+            transform: translateY(-2px);
+        }
+        .result {
+            margin-top: 10px;
+            font-size: 1.2em;
+            color: #ffffff;
+            min-height: 24px;
+        }
+        .gallery-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 20px;
+            justify-content: center;
+        }
+        .gallery-item {
+            position: relative;
+            width: 200px;
+            height: 200px;
+            overflow: hidden;
+            border: 2px solid #333;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
+            cursor: pointer;
+            transition: transform 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            padding-bottom: 30px;
+            box-sizing: border-box;
+        }
+        .gallery-item:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.7);
+        }
+        .gallery-item img, .gallery-item video {
+            width: 100%;
+            height: calc(100% - 30px);
+            object-fit: cover;
+        }
+        .gallery-item video {
+            object-fit: contain;
+            background-color: #000;
+        }
+        .gallery-item .video-icon {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 3em;
+            color: rgba(255,255,255,0.7);
+            text-shadow: 0 0 5px black;
+            pointer-events: none;
+        }
+
+        .gallery-item .file-name {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            color: white;
+            font-size: 0.8em;
+            padding: 5px 0;
+            text-align: center;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            box-sizing: border-box;
+        }
+
+        .delete-btn {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background-color: #ff4444;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 25px;
+            height: 25px;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s;
+            cursor: pointer;
+            z-index: 10;
+        }
+
+        .gallery-item:hover .delete-btn,
+        .folder-item:hover .delete-btn {
+            opacity: 1;
+        }
+
+        .fullscreen {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.9);
+            z-index: 1000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .fullscreen img, .fullscreen video {
+            max-width: 90%;
+            max-height: 90%;
+            object-fit: contain;
+            margin-bottom: 20px;
+        }
+        .fullscreen a {
+            display: block;
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: #007BFF;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+
+        .close-btn, .prev-btn, .next-btn {
+            position: absolute;
+            background-color: rgba(0, 123, 255, 0.7);
+            color: #ffffff;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+            z-index: 1010;
+        }
+        .close-btn {
+            top: 20px;
+            right: 20px;
+            transform: none;
+        }
+        .prev-btn {
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+        .next-btn {
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+        .close-btn:hover, .prev-btn:hover, .next-btn:hover {
+            background-color: #0056b3;
+        }
+
+        /* Not Defteri Sayfası Stilleri */
+        .notes-page h2 {
+            color: #ffffff;
+            margin-bottom: 15px;
+        }
+        #noteText {
+            width: calc(100% - 20px);
+            max-width: 760px;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #333;
+            border-radius: 4px;
+            background-color: #2d2d2d;
+            color: white;
+            font-size: 1em;
+            resize: vertical;
+        }
+        .notes-page button {
+            background-color: #28a745;
+        }
+        .notes-page button:hover {
+            background-color: #218838;
+        }
+        .notes-page button[onclick="closeNotesPage()"] {
+            background-color: #6c757d;
+        }
+        .notes-page button[onclick="closeNotesPage()"]:hover {
+            background-color: #5a6268;
+        }
+
+        /* Çöp Kutusu Sayfası Stilleri */
+        .trash-page {
+            background-color: #1e1e1e;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
+            text-align: center;
+            display: none;
+            max-width: 800px;
+            margin: 20px auto;
+        }
+        .trash-page h2 {
+            color: #ffffff;
+            margin-bottom: 15px;
+        }
+        .trash-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 20px;
+            justify-content: center;
+            min-height: 100px;
+            border: 1px dashed #444;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .trash-item {
+            position: relative;
+            width: 150px;
+            height: 150px;
+            overflow: hidden;
+            border: 1px solid #555;
+            border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            padding: 5px;
+            box-sizing: border-box;
+            background-color: #2a2a2a;
+        }
+        .trash-item img, .trash-item video {
+            max-width: 100%;
+            max-height: calc(100% - 40px);
+            object-fit: cover;
+        }
+        .trash-item .file-name {
+            font-size: 0.7em;
+            color: #ccc;
+            margin-top: 5px;
+            word-break: break-all;
+            text-align: center;
+        }
+        .trash-item .trash-actions {
+            margin-top: 5px;
+            display: flex;
+            gap: 5px;
+        }
+        .trash-item .trash-actions button {
+            padding: 5px 8px;
+            font-size: 0.7em;
+            margin: 0;
+            border-radius: 3px;
+        }
+        .trash-item .restore-btn {
+            background-color: #007bff;
+        }
+        .trash-item .restore-btn:hover {
+            background-color: #0056b3;
+        }
+        .trash-item .permanent-delete-btn {
+            background-color: #dc3545;
+        }
+        .trash-item .permanent-delete-btn:hover {
+            background-color: #c82333;
+        }
+        .trash-page button {
+            margin: 5px;
+        }
+        .trash-page button[onclick="clearTrash()"] {
+            background-color: #dc3545;
+        }
+        .trash-page button[onclick="clearTrash()"]:hover {
+            background-color: #c82333;
+        }
+        .trash-page button[onclick="closeTrashPage()"] {
+            background-color: #6c757d;
+        }
+        .trash-page button[onclick="closeTrashPage()"]:hover {
+            background-color: #5a6268;
+        }
+
+        /* Klasör görünümü için stiller */
+        .folder-item {
+            position: relative;
+            width: 200px;
+            height: 200px;
+            border: 2px solid #555;
+            border-radius: 8px;
+            background-color: #333;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2em;
+            cursor: pointer;
+            transition: transform 0.3s ease, background-color 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
+        }
+        .folder-item:hover {
+            transform: scale(1.05);
+            background-color: #444;
+        }
+        .folder-icon {
+            font-size: 4em;
+            margin-bottom: 10px;
+            color: #ffc107; /* Sarı klasör ikonu */
+        }
+        .current-folder-path {
+            text-align: left;
+            margin-bottom: 10px;
+            font-size: 0.9em;
+            color: #aaa;
+            width: 100%;
+            padding-left: 10px;
+            box-sizing: border-box;
+        }
+        .folder-actions {
+            margin-bottom: 15px;
+        }
+
+        @media (max-width: 600px) {
+            input[type="number"], input[type="file"], input[type="text"] {
+                width: 100%;
+                margin: 5px 0;
+            }
+            .gallery-item, .trash-item, .folder-item {
+                width: calc(50% - 15px);
+                height: 150px;
+            }
+            button {
+                padding: 8px 12px;
+                font-size: 0.9em;
+            }
+            #noteText {
+                width: calc(100% - 20px);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="calculator">
+        <h1>Hesap Makinesi</h1>
+        <input type="number" id="num1" placeholder="Sayı 1">
+        <input type="number" id="num2" placeholder="Sayı 2">
+        <div>
+            <button onclick="calculate('add')">+</button>
+            <button onclick="calculate('subtract')">-</button>
+            <button onclick="calculate('multiply')">×</button>
+            <button onclick="calculate('divide')">÷</button>
+        </div>
+        <div class="result" id="result">Sonuç: </div>
+    </div>
+
+    <div class="secret-container">
+        <h1>Gizli Galeri</h1>
+        <div class="current-folder-path" id="currentFolderPath">Konum: Kök Dizin</div>
+        <div class="folder-actions">
+            <input type="text" id="newFolderName" placeholder="Yeni klasör adı">
+            <button onclick="createFolder()">Klasör Oluştur</button>
+            <button onclick="goBackFolder()" id="goBackFolderBtn" style="display: none;">Geri Git</button>
+        </div>
+        <p>Dosyalarınızı buradan yükleyin ve düzenli bir şekilde görün!</p>
+        <input type="file" id="fileInput" accept="image/*,video/*,.pdf,.doc,.docx,.txt,.zip,.rar" multiple>
+        <button onclick="uploadFilesToCurrentFolder()">Dosyaları Yükle</button>
+        <button onclick="clearGallery()">Galeriyi Temizle</button>
+        <div class="gallery-container" id="galleryContainer"></div>
+
+        <button onclick="openNotesPage()" style="margin-top: 15px;">Not Defterini Aç</button>
+        <button onclick="openTrashPage()" style="margin-top: 15px; background-color: #ffc107; color: black;">Çöp Kutusunu Aç</button>
+
+        <div class="fullscreen" id="fullscreen">
+        </div>
+
+        <button onclick="logout()">Çıkış</button>
+    </div>
+
+    <div id="notesPage" class="notes-page">
+        <h2>Not Defteri</h2>
+        <textarea id="noteText" placeholder="Notunuzu buraya yazın..." rows="10"></textarea>
+        <button onclick="saveNote()">Notu Kaydet</button>
+        <div class="result" id="noteResult"></div>
+        <button onclick="closeNotesPage()" style="margin-top: 20px;">Geri</button>
+    </div>
+
+    <div id="trashPage" class="trash-page">
+        <h2>Çöp Kutusu</h2>
+        <div class="trash-container" id="trashContainer"></div>
+        <button onclick="clearTrash()" style="background-color: #dc3545; margin-top: 20px;">Çöp Kutusunu Boşalt</button>
+        <button onclick="closeTrashPage()" style="margin-top: 20px;">Geri</button>
+    </div>
+
+    <script>
+        const secretNumber1 = 1;
+        const secretNumber2 = 42;
+        let photos = [];
+        let folders = [];
+        let currentFolderId = null;
+        let trashedFiles = [];
+        let currentPhotoIndex = 0;
+        let savedNote = "";
+
+        // IndexedDB Ayarları
+        const DB_NAME = 'SecretAppData';
+        const DB_VERSION = 2;
+        const GALLERY_STORE_NAME = 'galleryFiles';
+        const FOLDER_STORE_NAME = 'folders';
+        const TRASH_STORE_NAME = 'trashStore';
+        let db;
+
+        // IndexedDB'yi Başlatma Fonksiyonu
+        function initIndexedDB() {
+            return new Promise((resolve, reject) => {
+                const request = indexedDB.open(DB_NAME, DB_VERSION);
+
+                request.onerror = (event) => {
+                    console.error("IndexedDB hatası:", event.target.errorCode);
+                    reject('IndexedDB açılamadı.');
+                };
+
+                request.onsuccess = (event) => {
+                    db = event.target.result;
+                    console.log("IndexedDB başarıyla açıldı.");
+                    resolve();
+                };
+
+                request.onupgradeneeded = (event) => {
+                    db = event.target.result;
+                    if (!db.objectStoreNames.contains(GALLERY_STORE_NAME)) {
+                        const galleryStore = db.createObjectStore(GALLERY_STORE_NAME, { keyPath: 'id', autoIncrement: true });
+                        galleryStore.createIndex('folderId', 'folderId', { unique: false });
+                    }
+                    if (!db.objectStoreNames.contains(FOLDER_STORE_NAME)) {
+                        const folderStore = db.createObjectStore(FOLDER_STORE_NAME, { keyPath: 'id', autoIncrement: true });
+                        folderStore.createIndex('parentFolderId', 'parentFolderId', { unique: false });
+                    }
+                    if (!db.objectStoreNames.contains(TRASH_STORE_NAME)) {
+                        db.createObjectStore(TRASH_STORE_NAME, { keyPath: 'id', autoIncrement: true });
+                    }
+                    console.log("Object stores oluşturuldu/güncellendi.");
+                };
+            });
+        }
+
+        // IndexedDB'den tüm dosyaları veya klasörleri getirme (belirli bir store'dan)
+        function getAllItems(storeName, indexName = null, indexValue = null) {
+            return new Promise((resolve, reject) => {
+                if (!db) {
+                    reject('IndexedDB henüz başlatılmadı.');
+                    return;
+                }
+                const transaction = db.transaction([storeName], 'readonly');
+                const store = transaction.objectStore(storeName);
+                let request;
+
+                if (indexName && (indexValue !== undefined && indexValue !== null)) {
+                    const index = store.index(indexName);
+                    request = index.getAll(IDBKeyRange.only(indexValue));
+                } else if (indexName && (indexValue === undefined || indexValue === null)) {
+                    // Bu kısım null veya undefined olan indexValue'lar için doğru çalışmalı
+                    // Yani parentFolderId'si null olan klasörler (kök dizin) veya folderId'si null olan dosyalar
+                    request = store.getAll(); // Tüm öğeleri çekip manuel filtreleyeceğiz
+                } else {
+                    request = store.getAll();
+                }
+
+                request.onsuccess = (event) => {
+                    let results = event.target.result;
+                    // Eğer indexName var ama indexValue null/undefined ise, manuel filtrele
+                    if (indexName && (indexValue === null || indexValue === undefined)) {
+                         results = results.filter(item => item[indexName] === null || item[indexName] === undefined);
+                    }
+                    resolve(results);
+                };
+
+                request.onerror = (event) => {
+                    console.error(`Öğeler ${storeName} store'dan alınırken hata:`, event.target.errorCode);
+                    reject(`Öğeler ${storeName} store'dan alınamadı.`);
+                };
+            });
+        }
+
+        // IndexedDB'ye dosya veya klasör ekleme
+        function addItem(storeName, itemObj) {
+            return new Promise((resolve, reject) => {
+                if (!db) {
+                    reject('IndexedDB henüz başlatılmadı.');
+                    return;
+                }
+                const transaction = db.transaction([storeName], 'readwrite');
+                const store = transaction.objectStore(storeName);
+                
+                let itemToAdd = { ...itemObj };
+
+                // ID'yi number'a çeviriyoruz ki tutarlı olsun
+                if (itemToAdd.id && typeof itemToAdd.id === 'string') {
+                    itemToAdd.id = parseInt(itemToAdd.id, 10);
+                }
+                if (itemToAdd.folderId && typeof itemToAdd.folderId === 'string') {
+                    itemToAdd.folderId = parseInt(itemToAdd.folderId, 10);
+                }
+                if (itemToAdd.parentFolderId && typeof itemToAdd.parentFolderId === 'string') {
+                    itemToAdd.parentFolderId = parseInt(itemToAdd.parentFolderId, 10);
+                }
+
+                const request = store.add(itemToAdd);
+
+                request.onsuccess = (event) => {
+                    resolve(event.target.result);
+                };
+
+                request.onerror = (event) => {
+                    console.error(`Öğe ${storeName} store'a eklenirken hata:`, event.target.errorCode, itemToAdd);
+                    reject(`Öğe ${storeName} store'a eklenemedi.`);
+                };
+            });
+        }
+
+        // IndexedDB'den dosya veya klasör silme (ID ile)
+        function deleteItemFromDB(storeName, id) {
+            return new Promise((resolve, reject) => {
+                if (!db) {
+                    reject('IndexedDB henüz başlatılmadı.');
+                    return;
+                }
+                const transaction = db.transaction([storeName], 'readwrite');
+                const store = transaction.objectStore(storeName);
+                const request = store.delete(id);
+
+                request.onsuccess = () => {
+                    resolve();
+                };
+
+                request.onerror = (event) => {
+                    console.error(`Öğe ${storeName} store'dan silinirken hata:`, event.target.errorCode);
+                    reject(`Öğe ${storeName} store'dan silinemedi.`);
+                };
+            });
+        }
+
+        // IndexedDB'deki bir store'u temizleme
+        function clearStore(storeName) {
+            return new Promise((resolve, reject) => {
+                if (!db) {
+                    reject('IndexedDB henüz başlatılmadı.');
+                    return;
+                }
+                const transaction = db.transaction([storeName], 'readwrite');
+                const store = transaction.objectStore(storeName);
+                const request = store.clear();
+
+                request.onsuccess = () => {
+                    resolve();
+                };
+
+                request.onerror = (event) => {
+                    console.error(`Store ${storeName} temizlenirken hata:`, event.target.errorCode);
+                    reject(`Store ${storeName} temizlenemedi.`);
+                };
+            });
+        }
+
+
+        window.addEventListener('DOMContentLoaded', async () => {
+            try {
+                await initIndexedDB();
+                await loadGalleryContent();
+                trashedFiles = await getAllItems(TRASH_STORE_NAME);
+            } catch (error) {
+                console.error("Uygulama başlatılırken hata:", error);
+                alert("Veritabanı başlatılırken bir sorun oluştu.");
+            }
+
+            const storedNote = localStorage.getItem('userNote');
+            if (storedNote) {
+                savedNote = storedNote;
+                document.getElementById('noteText').value = savedNote;
+            }
+        });
+
+        // Galerinin içeriğini (klasörler ve dosyalar) yükleme fonksiyonu
+        async function loadGalleryContent() {
+            // currentFolderId null ise, parentFolderId'si null olanları getir (kök dizindeki klasörler)
+            // folderId null ise, klasörlere ait olmayan dosyaları getir (kök dizindeki dosyalar)
+            
+            // Buradaki await'ler çok önemli, verilerin tamamen çekildiğinden emin olmalıyız.
+            photos = await getAllItems(GALLERY_STORE_NAME, 'folderId', currentFolderId);
+            folders = await getAllItems(FOLDER_STORE_NAME, 'parentFolderId', currentFolderId);
+            
+            renderGallery();
+            updateFolderPathDisplay();
+        }
+
+        // Klasör yolunu güncelleme fonksiyonu
+        async function updateFolderPathDisplay() {
+            const pathDisplay = document.getElementById('currentFolderPath');
+            const goBackBtn = document.getElementById('goBackFolderBtn');
+            if (currentFolderId === null) {
+                pathDisplay.textContent = "Konum: Kök Dizin";
+                goBackBtn.style.display = 'none';
+            } else {
+                const allFolders = await getAllItems(FOLDER_STORE_NAME);
+                let path = [];
+                let tempFolderId = currentFolderId;
+
+                while (tempFolderId !== null) {
+                    // ID'lerin tipini Number olarak kontrol et
+                    const folder = allFolders.find(f => f.id === parseInt(tempFolderId, 10));
+                    if (folder) {
+                        path.unshift(folder.name);
+                        tempFolderId = folder.parentFolderId;
+                    } else {
+                        console.warn(`[updateFolderPathDisplay] Klasör ID ${tempFolderId} bulunamadı. Kök dizine dönülüyor.`);
+                        // Klasör bulunamazsa, kök dizine dönerek görüntü tutarsızlığını gider.
+                        currentFolderId = null;
+                        await loadGalleryContent(); // Tekrar yükle
+                        return; // Fonksiyondan çık
+                    }
+                }
+                pathDisplay.textContent = `Konum: Kök Dizin ${path.length > 0 ? '> ' + path.join(' > ') : ''}`;
+                goBackBtn.style.display = 'inline-block';
+            }
+        }
+
+
+        function calculate(operation) {
+            const num1 = parseFloat(document.getElementById('num1').value);
+            const num2 = parseFloat(document.getElementById('num2').value);
+            const resultElement = document.getElementById('result');
+
+            if (isNaN(num1) || isNaN(num2)) {
+                resultElement.textContent = "Lütfen geçerli sayılar girin.";
+                return;
+            }
+
+            let result;
+            switch (operation) {
+                case 'add':
+                    result = num1 + num2;
+                    if (num1 === secretNumber1 && num2 === secretNumber2) {
+                        openSecretContainer();
+                        return;
+                    }
+                    break;
+                case 'subtract':
+                    result = num1 - num2;
+                    break;
+                case 'multiply':
+                    result = num1 * num2;
+                    break;
+                case 'divide':
+                    if (num2 === 0) {
+                        resultElement.textContent = "Bir sayı sıfıra bölünemez!";
+                        return;
+                    }
+                    result = num1 / num2;
+                    break;
+                default:
+                    result = "Geçersiz işlem.";
+            }
+            resultElement.textContent = `Sonuç: ${result}`;
+        }
+
+        function openSecretContainer() {
+            document.querySelector('.calculator').style.display = 'none';
+            document.getElementById('notesPage').style.display = 'none';
+            document.getElementById('fullscreen').style.display = 'none';
+            document.getElementById('trashPage').style.display = 'none';
+
+            document.querySelector('.secret-container').style.display = 'block';
+            currentFolderId = null; // Her girişte kök dizine dön
+            loadGalleryContent();
+        }
+
+        function logout() {
+            document.querySelector('.secret-container').style.display = 'none';
+            document.getElementById('notesPage').style.display = 'none';
+            document.getElementById('fullscreen').style.display = 'none';
+            document.getElementById('trashPage').style.display = 'none';
+
+            document.querySelector('.calculator').style.display = 'block';
+            document.getElementById('num1').value = '';
+            document.getElementById('num2').value = '';
+            document.getElementById('result').textContent = 'Sonuç: ';
+        }
+
+        // Klasör oluşturma fonksiyonu
+        async function createFolder() {
+            const newFolderName = document.getElementById('newFolderName').value.trim();
+            if (!newFolderName) {
+                alert("Lütfen bir klasör adı girin.");
+                return;
+            }
+
+            const allFoldersInCurrent = await getAllItems(FOLDER_STORE_NAME, 'parentFolderId', currentFolderId);
+            const existingFolder = allFoldersInCurrent.find(f => f.name === newFolderName); 
+            if (existingFolder) {
+                alert("Bu klasörde bu isimde bir klasör zaten var. Lütfen farklı bir isim girin.");
+                return;
+            }
+
+            try {
+                await addItem(FOLDER_STORE_NAME, { name: newFolderName, parentFolderId: currentFolderId });
+                document.getElementById('newFolderName').value = '';
+                await loadGalleryContent();
+                alert(`'${newFolderName}' klasörü oluşturuldu.`);
+            } catch (error) {
+                console.error("Klasör oluşturulurken hata:", error);
+                alert("Klasör oluşturulurken bir hata oluştu.");
+            }
+        }
+
+        // Klasöre gitme fonksiyonu
+        async function openFolder(folderId) {
+            currentFolderId = folderId;
+            await loadGalleryContent();
+        }
+
+        // Bir üst klasöre geri dönme fonksiyonu
+        async function goBackFolder() {
+            if (currentFolderId === null) {
+                alert("Zaten kök dizindesiniz.");
+                return;
+            }
+            const allFolders = await getAllItems(FOLDER_STORE_NAME);
+            // currentFolderId'nin number tipinde olduğundan emin ol
+            const current = allFolders.find(f => f.id === parseInt(currentFolderId, 10)); 
+            if (current) {
+                currentFolderId = current.parentFolderId;
+                await loadGalleryContent();
+            } else {
+                console.warn(`[goBackFolder] Mevcut Klasör ID ${currentFolderId} bulunamadı. Kök dizine dönülüyor.`);
+                currentFolderId = null;
+                await loadGalleryContent();
+            }
+        }
+
+        // Dosyaları mevcut klasöre yükleme fonksiyonu
+        async function uploadFilesToCurrentFolder() {
+            const fileInput = document.getElementById('fileInput');
+            const files = fileInput.files;
+
+            if (files.length === 0) {
+                alert("Lütfen bir veya daha fazla dosya seçin.");
+                return;
+            }
+
+            try {
+                const fileReaders = Array.from(files).map(file => {
+                    return new Promise((resolve, reject) => {
+                        const reader = new FileReader();
+                        reader.onload = (e) => resolve({
+                            dataURL: e.target.result,
+                            type: file.type,
+                            name: file.name,
+                            folderId: currentFolderId // Ensure this is stored as a number or null
+                        });
+                        reader.onerror = (error) => reject(error);
+                        reader.readAsDataURL(file);
+                    });
+                });
+
+                const results = await Promise.all(fileReaders);
+                for (const fileObj of results) {
+                    await addItem(GALLERY_STORE_NAME, fileObj);
+                }
+                await loadGalleryContent();
+                alert('Dosyalar başarıyla yüklendi!');
+            } catch (error) {
+                console.error("Dosya yüklenirken bir hata oluştu:", error);
+                alert('Dosya yüklenirken bir hata oluştu. Konsolu kontrol edin.');
+            } finally {
+                fileInput.value = '';
+            }
+        }
+
+        // Galeriyi temizle (mevcut klasördeki tüm öğeleri çöp kutusuna taşı)
+        async function clearGallery() {
+            if (photos.length === 0 && folders.length === 0) {
+                alert('Bu klasör zaten boş.');
+                return;
+            }
+            if (confirm('Bu klasördeki tüm dosyaları ve alt klasörleri (içindekilerle birlikte) çöp kutusuna taşımak istediğinize emin misiniz?')) {
+                try {
+                    // Mevcut klasördeki dosyaları çöp kutusuna taşı
+                    for (const item of photos) {
+                        const itemForTrash = { ...item };
+                        delete itemForTrash.id; 
+                        itemForTrash.originalId = item.id; 
+                        itemForTrash.isFolder = false; 
+                        await addItem(TRASH_STORE_NAME, itemForTrash);
+                        await deleteItemFromDB(GALLERY_STORE_NAME, item.id);
+                    }
+                    // Mevcut klasördeki alt klasörleri çöp kutusuna taşı (ve içindekileri sil)
+                    for (const folder of folders) {
+                        await deleteFolderRecursive(folder.id);
+                    }
+
+                    await loadGalleryContent(); // Sayfayı tamamen yenile
+                    alert('Bu klasördeki tüm öğeler çöp kutusuna taşındı.');
+                } catch (error) {
+                    console.error("Galeriyi temizlerken bir hata oluştu:", error);
+                    alert("Galeriyi temizlerken bir hata oluştu.");
+                }
+            }
+        }
+
+        // renderGallery fonksiyonu IndexedDB ve Klasör uyumlu
+        function renderGallery() {
+            const galleryContainer = document.getElementById('galleryContainer');
+            galleryContainer.innerHTML = '';
+
+            if (folders.length === 0 && photos.length === 0) {
+                galleryContainer.innerHTML = '<p style="width:100%; text-align:center; padding: 20px;">Bu klasörde henüz klasör veya dosya bulunamadı.</p>';
+            }
+
+            // Klasörleri göster
+            folders.forEach(folder => {
+                const folderItem = document.createElement('div');
+                folderItem.classList.add('folder-item');
+                folderItem.innerHTML = `
+                    <div class="folder-icon">📁</div>
+                    <span class="file-name">${folder.name}</span>
+                    <button class="delete-btn" onclick="event.stopPropagation(); deleteFolder(${folder.id})">×</button>
+                `;
+                folderItem.onclick = () => openFolder(folder.id);
+                galleryContainer.appendChild(folderItem);
+            });
+
+            // Dosyaları göster
+            photos.forEach((fileObj, index) => {
+                const galleryItem = document.createElement('div');
+                galleryItem.classList.add('gallery-item');
+
+                let contentElement;
+                if (fileObj.type.startsWith('image/')) {
+                    contentElement = document.createElement('img');
+                    contentElement.src = fileObj.dataURL;
+                    contentElement.alt = fileObj.name;
+                } else if (fileObj.type.startsWith('video/')) {
+                    contentElement = document.createElement('video');
+                    contentElement.src = fileObj.dataURL;
+                    contentElement.alt = fileObj.name;
+                    contentElement.controls = false;
+                    contentElement.muted = true;
+                    contentElement.autoplay = true;
+                    contentElement.loop = true;
+
+                    const videoIcon = document.createElement('div');
+                    videoIcon.classList.add('video-icon');
+                    videoIcon.textContent = '▶';
+                    galleryItem.appendChild(videoIcon);
+
+                } else {
+                    contentElement = document.createElement('img');
+                    contentElement.src = 'https://via.placeholder.com/200x200?text=Dosya';
+                    contentElement.alt = 'Genel Dosya';
+                    contentElement.style.objectFit = 'contain';
+                    contentElement.style.backgroundColor = '#3498db';
+                    if (fileObj.type === 'application/pdf') {
+                        contentElement.src = 'https://via.placeholder.com/200x200?text=PDF';
+                        contentElement.alt = 'PDF Dosyası';
+                        contentElement.style.backgroundColor = '#f40f02';
+                    }
+                }
+                galleryItem.appendChild(contentElement);
+
+                const fileNameSpan = document.createElement('span');
+                fileNameSpan.classList.add('file-name');
+                fileNameSpan.textContent = fileObj.name;
+                galleryItem.appendChild(fileNameSpan);
+
+                const deleteBtn = document.createElement('button');
+                deleteBtn.classList.add('delete-btn');
+                deleteBtn.innerHTML = '×';
+
+                deleteBtn.onclick = async (e) => {
+                    e.stopPropagation();
+                    await deletePhoto(fileObj.id);
+                };
+
+                galleryItem.appendChild(deleteBtn);
+                galleryContainer.appendChild(galleryItem);
+
+                galleryItem.addEventListener('click', () => openFullscreen(fileObj.id));
+            });
+            updateFolderPathDisplay();
+        }
+
+        // Klasörü silme (içindekileri çöp kutusuna taşıma)
+        async function deleteFolder(folderIdToDelete) {
+            console.log(`[deleteFolder] Silinmek istenen Klasör ID: ${folderIdToDelete}`);
+            // ID'nin number olduğundan emin olalım
+            const parsedFolderIdToDelete = parseInt(folderIdToDelete, 10); 
+
+            const allFolders = await getAllItems(FOLDER_STORE_NAME);
+            const folderToDelete = allFolders.find(f => f.id === parsedFolderIdToDelete); 
+
+            if (!folderToDelete) {
+                console.log(`[deleteFolder] Klasör bulunamadı: ${parsedFolderIdToDelete}. Muhtemelen zaten silinmiş veya ID yanlış.`);
+                alert("Silinmek istenen klasör bulunamadı. Sayfayı yenileyip tekrar deneyin.");
+                await loadGalleryContent(); 
+                return;
+            }
+
+            if (confirm(`'${folderToDelete.name}' klasörünü ve içindeki tüm dosyaları/alt klasörleri çöp kutusuna taşımak istediğinize emin misiniz?`)) {
+                try {
+                    console.log(`[deleteFolder] Başlatılıyor: deleteFolderRecursive(${parsedFolderIdToDelete})`);
+                    await deleteFolderRecursive(parsedFolderIdToDelete);
+                    
+                    console.log(`[deleteFolder] deleteFolderRecursive tamamlandı. Çöp kutusu ve galeri güncelleniyor.`);
+                    trashedFiles = await getAllItems(TRASH_STORE_NAME);
+                    await loadGalleryContent(); // Önemli: Galeriyi yeniden yükle
+                    alert(`'${folderToDelete.name}' klasörü ve içindekiler çöp kutusuna taşındı.`);
+                    console.log(`[deleteFolder] İşlem Başarılı: ${folderToDelete.name} çöp kutusuna taşındı.`);
+                } catch (error) {
+                    console.error("[deleteFolder] Klasör silinirken hata:", error);
+                    alert("Klasör silinirken bir hata oluştu.");
+                }
+            }
+        }
+
+        // Alt klasörleri ve dosyalarını özyinelemeli silme (çöp kutusuna taşıma)
+        async function deleteFolderRecursive(folderId) {
+            console.log(`[deleteFolderRecursive] İşleniyor Klasör ID: ${folderId}`);
+
+            // ID'nin number olduğundan emin olalım
+            const parsedFolderId = parseInt(folderId, 10);
+
+            const filesInFolder = await getAllItems(GALLERY_STORE_NAME, 'folderId', parsedFolderId);
+            console.log(`[deleteFolderRecursive] Klasör ${parsedFolderId} içindeki dosyalar (${filesInFolder.length}):`, filesInFolder.map(f => f.name));
+
+            const subFolders = await getAllItems(FOLDER_STORE_NAME, 'parentFolderId', parsedFolderId);
+            console.log(`[deleteFolderRecursive] Klasör ${parsedFolderId} içindeki alt klasörler (${subFolders.length}):`, subFolders.map(f => f.name));
+
+            // Dosyaları çöp kutusuna taşı ve galeriden sil
+            for (const file of filesInFolder) {
+                console.log(`[deleteFolderRecursive] Dosya çöp kutusuna taşınıyor ve galeriden siliniyor: ${file.name} (ID: ${file.id})`);
+                const fileForTrash = { ...file };
+                delete fileForTrash.id; 
+                fileForTrash.originalId = file.id; 
+                fileForTrash.isFolder = false; 
+                await addItem(TRASH_STORE_NAME, fileForTrash);
+                await deleteItemFromDB(GALLERY_STORE_NAME, file.id);
+            }
+
+            // Alt klasörleri ve onların içindekileri özyinelemeli olarak sil
+            for (const subFolder of subFolders) {
+                console.log(`[deleteFolderRecursive] Alt klasör işleniyor (özyinelemeli): ${subFolder.name} (ID: ${subFolder.id})`);
+                await deleteFolderRecursive(subFolder.id);
+            }
+
+            // En son olarak, mevcut klasörün kendisini çöp kutusuna taşı ve klasörlerden sil
+            // Dikkat: Burada 'allFolders' yerine doğrudan 'folderId' ile aramalıyız çünkü
+            // bu fonksiyon Recursive (özyinelemeli) çalıştığı için, alt klasörler zaten silinmiş olabilir.
+            const folderToDeleteItself = (await getAllItems(FOLDER_STORE_NAME)).find(f => f.id === parsedFolderId);
+
+            if (folderToDeleteItself) {
+                console.log(`[deleteFolderRecursive] Klasörün kendisi çöp kutusuna taşınıyor ve klasörlerden siliniyor: ${folderToDeleteItself.name} (ID: ${folderToDeleteItself.id})`);
+                const folderForTrash = { ...folderToDeleteItself };
+                delete folderForTrash.id; 
+                folderForTrash.originalId = folderToDeleteItself.id; 
+                folderForTrash.isFolder = true; 
+                await addItem(TRASH_STORE_NAME, folderForTrash);
+                await deleteItemFromDB(FOLDER_STORE_NAME, parsedFolderId); // Doğru ID'yi kullan
+            } else {
+                console.log(`[deleteFolderRecursive] Klasör ${parsedFolderId} zaten FOLDER_STORE_NAME'de yoktu (muhtemelen recursive çağrı sırasında silindi).`);
+            }
+            console.log(`[deleteFolderRecursive] Klasör ${parsedFolderId} işleme tamamlandı.`);
+        }
+
+
+        // deletePhoto fonksiyonu IndexedDB için güncellendi
+        async function deletePhoto(idToDelete) {
+            if (confirm('Bu dosyayı çöp kutusuna taşımak istediğinize emin misiniz?')) {
+                try {
+                    // ID'nin number olduğundan emin olalım
+                    const parsedIdToDelete = parseInt(idToDelete, 10);
+
+                    const allPhotos = await getAllItems(GALLERY_STORE_NAME);
+                    const fileToTrash = allPhotos.find(file => file.id === parsedIdToDelete); 
+                    if (fileToTrash) {
+                        const fileForTrash = { ...fileToTrash };
+                        delete fileForTrash.id; 
+                        fileForTrash.originalId = fileToTrash.id; 
+                        fileForTrash.isFolder = false; 
+                        await addItem(TRASH_STORE_NAME, fileForTrash);
+                        await deleteItemFromDB(GALLERY_STORE_NAME, parsedIdToDelete);
+                        
+                        trashedFiles = await getAllItems(TRASH_STORE_NAME); // Çöp kutusunu güncelledik
+                        await loadGalleryContent(); // Galeriyi güncelledik
+                        alert('Dosya çöp kutusuna taşındı.');
+                    } else {
+                        alert('Dosya bulunamadı.');
+                        await loadGalleryContent(); 
+                    }
+                } catch (error) {
+                    console.error("Dosyayı çöp kutusuna taşırken hata:", error);
+                    alert("Dosyayı çöp kutusuna taşırken bir hata oluştu.");
+                }
+            }
+        }
+
+        // openFullscreen fonksiyonu IndexedDB uyumlu
+        function openFullscreen(fileId) {
+            currentPhotoIndex = photos.findIndex(p => p.id === parseInt(fileId, 10)); 
+            if (currentPhotoIndex === -1) {
+                alert("Dosya bulunamadı.");
+                return;
+            }
+            const fullscreen = document.getElementById('fullscreen');
+            
+            fullscreen.innerHTML = '';
+
+            const closeBtn = document.createElement('button');
+            closeBtn.classList.add('close-btn');
+            closeBtn.textContent = 'Kapat';
+            closeBtn.onclick = closeFullscreen;
+
+            const prevBtn = document.createElement('button');
+            prevBtn.classList.add('prev-btn');
+            prevBtn.textContent = '←';
+            prevBtn.onclick = prevPhoto;
+
+            const nextBtn = document.createElement('button');
+            nextBtn.classList.add('next-btn');
+            nextBtn.textContent = '→';
+            nextBtn.onclick = nextPhoto;
+
+            fullscreen.appendChild(closeBtn);
+            fullscreen.appendChild(prevBtn);
+            fullscreen.appendChild(nextBtn);
+
+            const fileObj = photos[currentPhotoIndex];
+
+            if (fileObj.type.startsWith('image/')) {
+                const img = document.createElement('img');
+                img.src = fileObj.dataURL;
+                img.alt = fileObj.name;
+                fullscreen.appendChild(img);
+            } else if (fileObj.type.startsWith('video/')) {
+                const video = document.createElement('video');
+                video.src = fileObj.dataURL;
+                video.alt = fileObj.name;
+                video.controls = true;
+                video.autoplay = true;
+                video.loop = false;
+                fullscreen.appendChild(video);
+            } else {
+                const fileDisplay = document.createElement('div');
+                fileDisplay.style.color = 'white';
+                fileDisplay.style.textAlign = 'center';
+                fileDisplay.style.fontSize = '1.5em';
+                fileDisplay.style.maxWidth = '90%';
+                fileDisplay.style.wordBreak = 'break-all';
+                fileDisplay.innerHTML = `<p><strong>${fileObj.name}</strong></p><p>(${fileObj.type})</p>`;
+
+                const downloadLink = document.createElement('a');
+                downloadLink.href = fileObj.dataURL;
+                downloadLink.download = fileObj.name;
+                downloadLink.textContent = 'Dosyayı İndir';
+                downloadLink.style.display = 'inline-block';
+                downloadLink.style.marginTop = '20px';
+                downloadLink.style.padding = '10px 20px';
+                downloadLink.style.backgroundColor = '#007BFF';
+                downloadLink.style.color = 'white';
+                downloadLink.style.textDecoration = 'none';
+                downloadLink.style.borderRadius = '5px';
+                fileDisplay.appendChild(downloadLink);
+
+                fullscreen.appendChild(fileDisplay);
+            }
+
+            fullscreen.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeFullscreen() {
+            const fullscreen = document.getElementById('fullscreen');
+            fullscreen.style.display = 'none';
+            document.body.style.overflow = 'auto';
+            const videoElement = fullscreen.querySelector('video');
+            if (videoElement) {
+                videoElement.pause();
+                videoElement.currentTime = 0;
+            }
+        }
+
+        function prevPhoto() {
+            if (photos.length === 0) return;
+            currentPhotoIndex = (currentPhotoIndex - 1 + photos.length) % photos.length;
+            openFullscreen(photos[currentPhotoIndex].id);
+        }
+
+        function nextPhoto() {
+            if (photos.length === 0) return;
+            currentPhotoIndex = (currentPhotoIndex + 1) % photos.length;
+            openFullscreen(photos[currentPhotoIndex].id);
+        }
+
+        // Not Defteri Fonksiyonları
+        function openNotesPage() {
+            document.querySelector('.calculator').style.display = 'none';
+            document.querySelector('.secret-container').style.display = 'none';
+            document.getElementById('trashPage').style.display = 'none';
+            document.getElementById('notesPage').style.display = 'block';
+            document.getElementById('noteText').value = savedNote;
+        }
+
+        function closeNotesPage() {
+            document.getElementById('notesPage').style.display = 'none';
+            document.querySelector('.secret-container').style.display = 'block';
+        }
+
+        function saveNote() {
+            savedNote = document.getElementById('noteText').value;
+            localStorage.setItem('userNote', savedNote);
+            document.getElementById('noteResult').textContent = "Not kaydedildi!";
+            setTimeout(() => {
+                document.getElementById('noteResult').textContent = "";
+            }, 2000);
+        }
+
+        // Çöp Kutusu Fonksiyonları
+        async function openTrashPage() {
+            document.querySelector('.calculator').style.display = 'none';
+            document.querySelector('.secret-container').style.display = 'none';
+            document.getElementById('notesPage').style.display = 'none';
+            document.getElementById('trashPage').style.display = 'block';
+            await renderTrash();
+        }
+
+        function closeTrashPage() {
+            document.getElementById('trashPage').style.display = 'none';
+            document.querySelector('.secret-container').style.display = 'block';
+        }
+
+        async function renderTrash() {
+            const trashContainer = document.getElementById('trashContainer');
+            trashContainer.innerHTML = '';
+            trashedFiles = await getAllItems(TRASH_STORE_NAME); // En güncel çöp kutusu içeriğini al
+
+            if (trashedFiles.length === 0) {
+                trashContainer.innerHTML = '<p style="width:100%; text-align:center; padding: 20px;">Çöp kutusu boş.</p>';
+                return;
+            }
+
+            trashedFiles.forEach(item => {
+                const trashItem = document.createElement('div');
+                trashItem.classList.add('trash-item');
+
+                let previewElement;
+                if (item.isFolder) {
+                    previewElement = document.createElement('div');
+                    previewElement.classList.add('folder-icon');
+                    previewElement.textContent = '📁';
+                    previewElement.style.fontSize = '3em';
+                    previewElement.style.marginBottom = '5px';
+                    previewElement.style.color = '#ffc107';
+
+                } else if (item.type && item.type.startsWith('image/')) {
+                    previewElement = document.createElement('img');
+                    previewElement.src = item.dataURL;
+                    previewElement.alt = item.name;
+                } else if (item.type && item.type.startsWith('video/')) {
+                    previewElement = document.createElement('video');
+                    previewElement.src = item.dataURL;
+                    previewElement.alt = item.name;
+                    previewElement.controls = false;
+                    previewElement.muted = true;
+                    previewElement.autoplay = true;
+                    previewElement.loop = true;
+                    previewElement.style.width = '100%';
+                    previewElement.style.height = '100%';
+                    previewElement.style.objectFit = 'contain';
+                    previewElement.style.backgroundColor = 'black';
+                } else {
+                    previewElement = document.createElement('img');
+                    previewElement.src = 'https://via.placeholder.com/100x100?text=Dosya';
+                    previewElement.alt = 'Genel Dosya';
+                    previewElement.style.objectFit = 'contain';
+                    previewElement.style.backgroundColor = '#3498db';
+                    if (item.type === 'application/pdf') {
+                        previewElement.src = 'https://via.placeholder.com/100x100?text=PDF';
+                        previewElement.alt = 'PDF Dosyası';
+                        previewElement.style.backgroundColor = '#f40f02';
+                    }
+                }
+                trashItem.appendChild(previewElement);
+
+                const fileNameSpan = document.createElement('span');
+                fileNameSpan.classList.add('file-name');
+                fileNameSpan.textContent = item.name;
+                trashItem.appendChild(fileNameSpan);
+
+                const actionsDiv = document.createElement('div');
+                actionsDiv.classList.add('trash-actions');
+
+                const restoreBtn = document.createElement('button');
+                restoreBtn.classList.add('restore-btn');
+                restoreBtn.textContent = 'Geri Yükle';
+                restoreBtn.onclick = () => restoreFromTrash(item.id, item.isFolder);
+                actionsDiv.appendChild(restoreBtn);
+
+                const permanentDeleteBtn = document.createElement('button');
+                permanentDeleteBtn.classList.add('permanent-delete-btn');
+                permanentDeleteBtn.textContent = 'Kalıcı Sil';
+                permanentDeleteBtn.onclick = () => permanentDelete(item.id, item.isFolder);
+                actionsDiv.appendChild(permanentDeleteBtn);
+
+                trashItem.appendChild(actionsDiv);
+                trashContainer.appendChild(trashItem);
+            });
+        }
+
+        async function restoreFromTrash(idToRestore, isFolder = false) {
+            if (confirm('Bu öğeyi galerisine geri yüklemek istediğinize emin misiniz?')) {
+                try {
+                    // ID'nin number olduğundan emin olalım
+                    const parsedIdToRestore = parseInt(idToRestore, 10);
+
+                    const itemToRestore = trashedFiles.find(item => item.id === parsedIdToRestore);
+                    if (itemToRestore) {
+                        const restoredItem = { ...itemToRestore };
+                        delete restoredItem.id; 
+                        
+                        let targetFolderExists = false;
+                        if (isFolder) { 
+                            if (restoredItem.parentFolderId === null || restoredItem.parentFolderId === undefined) {
+                                targetFolderExists = true; 
+                            } else {
+                                const allFolders = await getAllItems(FOLDER_STORE_NAME);
+                                targetFolderExists = allFolders.some(f => f.id === parseInt(restoredItem.parentFolderId, 10));
+                            }
+                        } else { 
+                            if (restoredItem.folderId === null || restoredItem.folderId === undefined) {
+                                targetFolderExists = true; 
+                            } else {
+                                const allFolders = await getAllItems(FOLDER_STORE_NAME);
+                                targetFolderExists = allFolders.some(f => f.id === parseInt(restoredItem.folderId, 10));
+                            }
+                        }
+
+                        if (!targetFolderExists) {
+                            alert("Geri yüklenecek klasör veya üst klasör bulunamadı. Öğeyi kök dizine yüklüyorum.");
+                            if (isFolder) {
+                                restoredItem.parentFolderId = null;
+                            } else {
+                                restoredItem.folderId = null;
+                            }
+                        }
+
+                        if (isFolder) {
+                            await addItem(FOLDER_STORE_NAME, restoredItem);
+                        } else {
+                            await addItem(GALLERY_STORE_NAME, restoredItem);
+                        }
+                        await deleteItemFromDB(TRASH_STORE_NAME, parsedIdToRestore);
+
+                        await renderTrash(); // Çöp kutusunu yeniden çiz
+                        await loadGalleryContent(); // Galeriyi yeniden yükle
+                        alert('Öğe başarıyla geri yüklendi.');
+                    } else {
+                        alert('Öğe çöp kutusunda bulunamadı.');
+                    }
+                } catch (error) {
+                    console.error("Öğe geri yüklenirken hata:", error);
+                    alert("Öğe geri yüklenirken bir hata oluştu.");
+                }
+            }
+        }
+
+        async function permanentDelete(idToDelete, isFolder = false) {
+            if (confirm('Bu öğeyi kalıcı olarak silmek istediğinize emin misiniz? Bu işlem geri alınamaz!')) {
+                try {
+                    // ID'nin number olduğundan emin olalım
+                    const parsedIdToDelete = parseInt(idToDelete, 10);
+
+                    const itemToDeleteInTrash = trashedFiles.find(item => item.id === parsedIdToDelete);
+
+                    if (!itemToDeleteInTrash) {
+                        console.warn(`[permanentDelete] Çöp kutusunda ${parsedIdToDelete} ID'li öğe bulunamadı.`);
+                        alert('Öğe çöp kutusunda bulunamadı.');
+                        await renderTrash(); // Çöp kutusunu güncelleyelim
+                        return;
+                    }
+
+                    if (isFolder) {
+                        // Bir klasör kalıcı olarak silinirken, çöp kutusundaki alt öğeleri de silmeliyiz.
+                        // Dikkat: Burada `itemToDeleteInTrash.originalId` kullanılır, çünkü bu, klasörün orijinal ID'sidir.
+                        // `deleteAllItemsInFolderPermanently` zaten çöp kutusundaki orijinal ID'leri bulup siliyor.
+                        await deleteAllItemsInFolderPermanently(parsedIdToDelete); // `deleteAllItemsInFolderPermanently` fonksiyonunu güncelledik.
+                    } else {
+                        await deleteItemFromDB(TRASH_STORE_NAME, parsedIdToDelete);
+                    }
+                    
+                    await renderTrash(); // Çöp kutusunu güncelledik
+                    alert('Öğe kalıcı olarak silindi.');
+                } catch (error) {
+                    console.error("Öğe kalıcı olarak silinirken hata:", error);
+                    alert("Öğe kalıcı olarak silinirken bir hata oluştu.");
+                }
+            }
+        }
+        
+        async function deleteAllItemsInFolderPermanently(trashItemId) {
+            // Çöp kutusundaki bu klasör objesini bul
+            const folderInTrash = (await getAllItems(TRASH_STORE_NAME)).find(item => item.id === parseInt(trashItemId, 10) && item.isFolder);
+
+            if (!folderInTrash) {
+                console.warn(`[deleteAllItemsInFolderPermanently] Çöp kutusunda ${trashItemId} ID'li klasör bulunamadı.`);
+                return;
+            }
+            
+            const originalFolderId = folderInTrash.originalId;
+
+            // Orijinal klasör ID'sine ait dosyaları ve alt klasörleri bul
+            const allTrashedItems = await getAllItems(TRASH_STORE_NAME);
+
+            // Bu orijinal klasöre ait tüm alt öğeleri (dosyalar ve alt klasörler) bul ve sil
+            // Dikkat: Burada `originalId`'ye göre filtreleme yapıyoruz, çünkü `folderId` ve `parentFolderId`
+            // orijinal ID'leri tutuyor.
+            const itemsToDeleteUnderThisFolder = allTrashedItems.filter(item => {
+                // Eğer bir dosya ise ve folderId'si orijinal klasör ID'sine eşitse
+                if (!item.isFolder && item.folderId === originalFolderId) {
+                    return true;
+                }
+                // Eğer bir klasör ise ve parentFolderId'si orijinal klasör ID'sine eşitse
+                if (item.isFolder && item.parentFolderId === originalFolderId) {
+                    return true;
+                }
+                return false;
+            });
+
+
+            for (const item of itemsToDeleteUnderThisFolder) {
+                if (item.isFolder) {
+                    console.log(`[deleteAllItemsInFolderPermanently] Alt klasör kalıcı olarak siliniyor (özyinelemeli): ${item.name} (Çöp ID: ${item.id}, Orijinal ID: ${item.originalId})`);
+                    // Alt klasörü de özyinelemeli olarak sil
+                    await deleteAllItemsInFolderPermanently(item.id); 
+                } else {
+                    console.log(`[deleteAllItemsInFolderPermanently] Dosya kalıcı olarak siliniyor: ${item.name} (Çöp ID: ${item.id}, Orijinal ID: ${item.originalId})`);
+                    await deleteItemFromDB(TRASH_STORE_NAME, item.id);
+                }
+            }
+            
+            // Son olarak, klasörün kendisini çöp kutusundan sil
+            console.log(`[deleteAllItemsInFolderPermanently] Ana klasör kalıcı olarak siliniyor: ${folderInTrash.name} (Çöp ID: ${folderInTrash.id}, Orijinal ID: ${folderInTrash.originalId})`);
+            await deleteItemFromDB(TRASH_STORE_NAME, folderInTrash.id);
+        }
+
+
+        async function clearTrash() {
+            if (trashedFiles.length === 0) {
+                alert('Çöp kutusu zaten boş.');
+                return;
+            }
+            if (confirm('Çöp kutusundaki tüm öğeleri kalıcı olarak silmek istediğinize emin misiniz? Bu işlem geri alınamaz!')) {
+                try {
+                    await clearStore(TRASH_STORE_NAME);
+                    trashedFiles = [];
+                    await renderTrash();
+                    alert('Çöp kutusu başarıyla boşaltıldı.');
+                } catch (error) {
+                    console.error("Çöp kutusu boşaltılırken hata:", error);
+                    alert("Çöp kutusu boşaltılırken bir hata oluştu.");
+                }
+            }
+        }
+
+    </script>
+</body>
+</html>
