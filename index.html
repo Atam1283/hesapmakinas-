@@ -2,7 +2,7 @@
 <html lang="tr">
 <head>
   <meta charset="UTF-8">
-  <title>Gizli Giriş - Hesap Makinesi</title>
+  <title>Gizli Giriş Uygulaması</title>
   <style>
     body {
       background: #111;
@@ -12,13 +12,14 @@
       padding: 30px;
     }
 
-    #calculator {
+    #calculator, #authSection, #mainApp {
       margin: auto;
       width: 300px;
       padding: 20px;
       background: #222;
       border-radius: 10px;
       box-shadow: 0 0 10px rgba(255,255,255,0.1);
+      margin-top: 20px;
     }
 
     #calcInput {
@@ -40,23 +41,14 @@
       background: #444;
       color: white;
       cursor: pointer;
-      transition: background 0.3s;
     }
 
     button:hover {
       background: #666;
     }
 
-    #authSection {
-      display: none;
-      margin-top: 40px;
-      padding: 20px;
-      background: #1e1e1e;
-      border-radius: 10px;
-    }
-
-    input[type="text"], input[type="password"] {
-      width: 200px;
+    input[type="text"], input[type="password"], textarea {
+      width: 90%;
       padding: 10px;
       margin: 10px 0;
       border: none;
@@ -74,6 +66,22 @@
 
     #loginBtn:hover {
       background: #0056b3;
+    }
+
+    #gallery img {
+      width: 80px;
+      height: 80px;
+      object-fit: cover;
+      margin: 5px;
+      border-radius: 6px;
+      border: 2px solid #555;
+    }
+
+    textarea {
+      height: 100px;
+      resize: none;
+      background: #333;
+      color: white;
     }
   </style>
 </head>
@@ -97,11 +105,23 @@
     </div>
   </div>
 
-  <div id="authSection">
-    <h2>Giriş / Kayıt Paneli</h2>
+  <div id="authSection" style="display:none;">
+    <h2>Giriş / Kayıt</h2>
     <input type="text" placeholder="Kullanıcı Adı"><br>
     <input type="password" placeholder="Şifre"><br>
     <button id="loginBtn">Giriş Yap</button>
+  </div>
+
+  <div id="mainApp" style="display:none;">
+    <h2>Galeri</h2>
+    <div id="gallery">
+      <img src="https://placekitten.com/100/100" alt="Kedi 1">
+      <img src="https://placekitten.com/101/100" alt="Kedi 2">
+      <img src="https://placekitten.com/102/100" alt="Kedi 3">
+    </div>
+
+    <h2>Notlar</h2>
+    <textarea placeholder="Notlarınızı buraya yazın..."></textarea>
   </div>
 
   <script>
@@ -117,12 +137,12 @@
         input.value = '';
 
         if (codeSequence.length > 2) {
-          codeSequence.shift(); // sadece son 2 kodu tut
+          codeSequence.shift();
         }
 
         if (codeSequence[0] === correctCodes[0] && codeSequence[1] === correctCodes[1]) {
           document.getElementById('authSection').style.display = 'block';
-          alert("Giriş bölümü açıldı.");
+          alert("Giriş paneli açıldı.");
         }
       }
     }
@@ -130,6 +150,19 @@
     function clearInput() {
       document.getElementById('calcInput').value = '';
     }
+
+    document.getElementById('loginBtn').addEventListener('click', function () {
+      const username = document.querySelector('#authSection input[type="text"]').value;
+      const password = document.querySelector('#authSection input[type="password"]').value;
+
+      if (username && password) {
+        alert(`Hoş geldin, ${username}!`);
+        document.getElementById('authSection').style.display = 'none';
+        document.getElementById('mainApp').style.display = 'block';
+      } else {
+        alert("Lütfen kullanıcı adı ve şifre girin.");
+      }
+    });
   </script>
 
 </body>
