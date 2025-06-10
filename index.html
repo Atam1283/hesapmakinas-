@@ -1,241 +1,136 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="tr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hesap Makinesi, Gizli Galeri, Not Defteri ve Çöp Kutusu</title>
-    <style>
-        /* CSS kodları burada değişmedi, eski halini koruyor */
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #121212;
-            color: #ffffff;
-            margin: 0;
-            padding: 20px;
-        }
-        h1, p, h2 {
-            color: #ffffff;
-            text-align: center;
-        }
-        .login-container, .calculator, .secret-container, .notes-page, .trash-page {
-            background-color: #1e1e1e;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
-            text-align: center;
-            display: none;
-            max-width: 800px;
-            margin: 20px auto;
-        }
-        .login-container {
-            display: block; /* Başlangıçta kayıt ekranı açık */
-        }
-        input[type="number"], input[type="file"], input[type="text"], input[type="password"] {
-            padding: 10px;
-            margin: 10px 5px;
-            border: 1px solid #333;
-            border-radius: 4px;
-            width: 80%;
-            background-color: #2d2d2d;
-            color: white;
-        }
-        button {
-            padding: 10px 15px;
-            margin: 5px;
-            background-color: #007BFF;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        button:hover {
-            background-color: #0056b3;
-            transform: translateY(-2px);
-        }
-        .result {
-            margin-top: 10px;
-            font-size: 1.2em;
-            color: #ffffff;
-            min-height: 24px;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <title>Gizli Giriş - Hesap Makinesi</title>
+  <style>
+    body {
+      background: #111;
+      color: white;
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding: 30px;
+    }
+
+    #calculator {
+      margin: auto;
+      width: 300px;
+      padding: 20px;
+      background: #222;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(255,255,255,0.1);
+    }
+
+    #calcInput {
+      width: 100%;
+      height: 40px;
+      font-size: 24px;
+      text-align: right;
+      margin-bottom: 15px;
+      padding: 5px;
+    }
+
+    button {
+      width: 60px;
+      height: 60px;
+      margin: 5px;
+      font-size: 20px;
+      border: none;
+      border-radius: 8px;
+      background: #444;
+      color: white;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    button:hover {
+      background: #666;
+    }
+
+    #authSection {
+      display: none;
+      margin-top: 40px;
+      padding: 20px;
+      background: #1e1e1e;
+      border-radius: 10px;
+    }
+
+    input[type="text"], input[type="password"] {
+      width: 200px;
+      padding: 10px;
+      margin: 10px 0;
+      border: none;
+      border-radius: 5px;
+    }
+
+    #loginBtn {
+      padding: 10px 20px;
+      background: #007bff;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    #loginBtn:hover {
+      background: #0056b3;
+    }
+  </style>
 </head>
 <body>
-    <!-- Giriş/Kayıt Ekranı -->
-    <div class="login-container">
-        <h1>Giriş Yap</h1>
-        <form id="loginForm">
-            <input type="text" id="username" placeholder="Kullanıcı Adı" required>
-            <input type="password" id="password" placeholder="Şifre" required>
-            <button type="submit">Giriş Yap</button>
-        </form>
-        <div class="result" id="loginResult"></div>
+
+  <h1>Hesap Makinesi</h1>
+  <div id="calculator">
+    <input type="text" id="calcInput" readonly />
+    <div>
+      <button onclick="press('0')">0</button>
+      <button onclick="press('1')">1</button>
+      <button onclick="press('2')">2</button>
+      <button onclick="press('3')">3</button>
+      <button onclick="press('4')">4</button>
+      <button onclick="press('5')">5</button>
+      <button onclick="press('6')">6</button>
+      <button onclick="press('7')">7</button>
+      <button onclick="press('8')">8</button>
+      <button onclick="press('9')">9</button>
+      <button onclick="clearInput()">C</button>
     </div>
+  </div>
 
-    <!-- Hesap Makinesi -->
-    <div class="calculator">
-        <h1>Hesap Makinesi</h1>
-        <input type="number" id="num1" placeholder="Sayı 1">
-        <input type="number" id="num2" placeholder="Sayı 2">
-        <div>
-            <button onclick="calculate('add')">+</button>
-            <button onclick="calculate('subtract')">-</button>
-            <button onclick="calculate('multiply')">×</button>
-            <button onclick="calculate('divide')">÷</button>
-        </div>
-        <div class="result" id="result">Sonuç: </div>
-    </div>
+  <div id="authSection">
+    <h2>Giriş / Kayıt Paneli</h2>
+    <input type="text" placeholder="Kullanıcı Adı"><br>
+    <input type="password" placeholder="Şifre"><br>
+    <button id="loginBtn">Giriş Yap</button>
+  </div>
 
-    <!-- Gizli Galeri -->
-    <div class="secret-container">
-        <h1>Gizli Galeri</h1>
-        <input type="file" id="fileInput" multiple>
-        <button onclick="uploadFiles()">Dosyaları Yükle</button>
-        <div class="gallery-container" id="galleryContainer"></div>
-        <button onclick="openNotesPage()">Not Defterini Aç</button>
-        <button onclick="openTrashPage()">Çöp Kutusunu Aç</button>
-        <button onclick="logout()">Çıkış</button>
-    </div>
+  <script>
+    let codeSequence = [];
+    const correctCodes = ['01', '42'];
 
-    <!-- Not Defteri -->
-    <div id="notesPage" class="notes-page">
-        <h2>Not Defteri</h2>
-        <textarea id="noteText"></textarea>
-        <button onclick="saveNote()">Kaydet</button>
-        <button onclick="closeNotesPage()">Geri</button>
-    </div>
+    function press(num) {
+      const input = document.getElementById('calcInput');
+      input.value += num;
 
-    <!-- Çöp Kutusu -->
-    <div id="trashPage" class="trash-page">
-        <h2>Çöp Kutusu</h2>
-        <div class="trash-container" id="trashContainer"></div>
-        <button onclick="clearTrash()">Çöp Kutusunu Boşalt</button>
-        <button onclick="closeTrashPage()">Geri</button>
-    </div>
+      if (input.value.length === 2) {
+        codeSequence.push(input.value);
+        input.value = '';
 
-    <script>
-        // Kayıt ve Giriş Fonksiyonları
-        const loginForm = document.getElementById('loginForm');
-        const loginResult = document.getElementById('loginResult');
-
-        loginForm.addEventListener('submit', function (e) {
-            e.preventDefault();
-            const username = document.getElementById('username').value;
-            const password = document.getElementById('password').value;
-
-            // Kullanıcı verilerini localStorage'da kaydet
-            const storedUsername = localStorage.getItem('username');
-            const storedPassword = localStorage.getItem('password');
-
-            if (storedUsername && storedPassword) {
-                // Giriş kontrolü
-                if (username === storedUsername && password === storedPassword) {
-                    loginResult.textContent = "Başarılı giriş!";
-                    document.querySelector('.login-container').style.display = 'none';
-                    document.querySelector('.calculator').style.display = 'block';
-                } else {
-                    loginResult.textContent = "Hatalı kullanıcı adı veya şifre!";
-                }
-            } else {
-                // Yeni kullanıcı kaydetme
-                localStorage.setItem('username', username);
-                localStorage.setItem('password', password);
-                loginResult.textContent = "Kayıt başarılı! Giriş yapabilirsiniz.";
-            }
-        });
-
-        // Hesap Makinesi Fonksiyonları
-        function calculate(operation) {
-            const num1 = parseFloat(document.getElementById('num1').value);
-            const num2 = parseFloat(document.getElementById('num2').value);
-            const resultElement = document.getElementById('result');
-            let result;
-
-            switch (operation) {
-                case 'add':
-                    result = num1 + num2;
-                    break;
-                case 'subtract':
-                    result = num1 - num2;
-                    break;
-                case 'multiply':
-                    result = num1 * num2;
-                    break;
-                case 'divide':
-                    result = num1 / num2;
-                    break;
-            }
-            resultElement.textContent = `Sonuç: ${result}`;
+        if (codeSequence.length > 2) {
+          codeSequence.shift(); // sadece son 2 kodu tut
         }
 
-        // Gizli Galeri Fonksiyonları
-        function uploadFiles() {
-            const fileInput = document.getElementById('fileInput');
-            const files = fileInput.files;
-            const galleryContainer = document.getElementById('galleryContainer');
-
-            for (const file of files) {
-                const reader = new FileReader();
-                reader.onload = function (e) {
-                    const galleryItem = document.createElement('div');
-                    galleryItem.classList.add('gallery-item');
-
-                    const img = document.createElement('img');
-                    img.src = e.target.result;
-                    galleryItem.appendChild(img);
-
-                    galleryContainer.appendChild(galleryItem);
-                };
-                reader.readAsDataURL(file);
-            }
+        if (codeSequence[0] === correctCodes[0] && codeSequence[1] === correctCodes[1]) {
+          document.getElementById('authSection').style.display = 'block';
+          alert("Giriş bölümü açıldı.");
         }
+      }
+    }
 
-        // Not Defteri Fonksiyonları
-        function openNotesPage() {
-            document.querySelector('.calculator').style.display = 'none';
-            document.querySelector('.secret-container').style.display = 'none';
-            document.getElementById('notesPage').style.display = 'block';
-        }
+    function clearInput() {
+      document.getElementById('calcInput').value = '';
+    }
+  </script>
 
-        function closeNotesPage() {
-            document.getElementById('notesPage').style.display = 'none';
-            document.querySelector('.secret-container').style.display = 'block';
-        }
-
-        function saveNote() {
-            const noteText = document.getElementById('noteText').value;
-            localStorage.setItem('note', noteText);
-            alert("Not kaydedildi!");
-        }
-
-        // Çıkış Fonksiyonu
-        function logout() {
-            document.querySelector('.calculator').style.display = 'none';
-            document.querySelector('.secret-container').style.display = 'none';
-            document.getElementById('notesPage').style.display = 'none';
-            document.getElementById('trashPage').style.display = 'none';
-            document.querySelector('.login-container').style.display = 'block';
-        }
-
-        // Çöp Kutusu Fonksiyonları
-        function openTrashPage() {
-            document.querySelector('.calculator').style.display = 'none';
-            document.querySelector('.secret-container').style.display = 'none';
-            document.getElementById('notesPage').style.display = 'none';
-            document.getElementById('trashPage').style.display = 'block';
-        }
-
-        function closeTrashPage() {
-            document.getElementById('trashPage').style.display = 'none';
-            document.querySelector('.secret-container').style.display = 'block';
-        }
-
-        function clearTrash() {
-            const trashContainer = document.getElementById('trashContainer');
-            trashContainer.innerHTML = '';
-            alert("Çöp kutusu boşaltıldı!");
-        }
-    </script>
 </body>
 </html>
