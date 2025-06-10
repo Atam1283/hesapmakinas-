@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gizli Uygulama</title>
+    <title>Hesap Makinesi, Gizli Galeri, Not Defteri ve Çöp Kutusu</title>
     <style>
+        /* CSS kodları burada değişmedi, eski halini koruyor */
         body {
             font-family: Arial, sans-serif;
             background-color: #121212;
@@ -12,41 +13,45 @@
             margin: 0;
             padding: 20px;
         }
-        .container {
-            max-width: 400px;
-            margin: 0 auto;
+        h1, p, h2 {
+            color: #ffffff;
+            text-align: center;
+        }
+        .login-container, .calculator, .secret-container, .notes-page, .trash-page {
             background-color: #1e1e1e;
             padding: 20px;
             border-radius: 8px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
             text-align: center;
+            display: none;
+            max-width: 800px;
+            margin: 20px auto;
         }
-        h1, p {
-            color: #ffffff;
-            text-align: center;
+        .login-container {
+            display: block; /* Başlangıçta kayıt ekranı açık */
         }
-        input[type="number"], input[type="text"], input[type="password"] {
+        input[type="number"], input[type="file"], input[type="text"], input[type="password"] {
             padding: 10px;
-            margin: 10px 0;
+            margin: 10px 5px;
             border: 1px solid #333;
             border-radius: 4px;
-            width: calc(100% - 22px);
+            width: 80%;
             background-color: #2d2d2d;
             color: white;
         }
         button {
             padding: 10px 15px;
-            margin: 10px 5px;
+            margin: 5px;
             background-color: #007BFF;
             color: white;
             border: none;
             border-radius: 4px;
             cursor: pointer;
             transition: all 0.3s ease;
-            width: calc(50% - 10px);
         }
         button:hover {
             background-color: #0056b3;
+            transform: translateY(-2px);
         }
         .result {
             margin-top: 10px;
@@ -54,34 +59,23 @@
             color: #ffffff;
             min-height: 24px;
         }
-        .hidden {
-            display: none;
-        }
-        .tab-buttons {
-            display: flex;
-            margin-bottom: 15px;
-        }
-        .tab-buttons button {
-            flex: 1;
-            border-radius: 0;
-            margin: 0;
-        }
-        .tab-buttons button:first-child {
-            border-top-left-radius: 4px;
-            border-bottom-left-radius: 4px;
-        }
-        .tab-buttons button:last-child {
-            border-top-right-radius: 4px;
-            border-bottom-right-radius: 4px;
-        }
-        .tab-buttons button.active {
-            background-color: #0056b3;
-        }
     </style>
 </head>
 <body>
-    <div class="container" id="calculatorContainer">
-        <h1>Giriş Paneli</h1>
+    <!-- Giriş/Kayıt Ekranı -->
+    <div class="login-container">
+        <h1>Giriş Yap</h1>
+        <form id="loginForm">
+            <input type="text" id="username" placeholder="Kullanıcı Adı" required>
+            <input type="password" id="password" placeholder="Şifre" required>
+            <button type="submit">Giriş Yap</button>
+        </form>
+        <div class="result" id="loginResult"></div>
+    </div>
+
+    <!-- Hesap Makinesi -->
+    <div class="calculator">
+        <h1>Hesap Makinesi</h1>
         <input type="number" id="num1" placeholder="Sayı 1">
         <input type="number" id="num2" placeholder="Sayı 2">
         <div>
@@ -93,157 +87,74 @@
         <div class="result" id="result">Sonuç: </div>
     </div>
 
-    <div class="container hidden" id="authContainer">
-        <div class="tab-buttons">
-            <button id="loginTab" class="active" onclick="switchTab('login')">Giriş Yap</button>
-            <button id="registerTab" onclick="switchTab('register')">Kayıt Ol</button>
-        </div>
-        
-        <div id="loginForm">
-            <h2>Giriş Yap</h2>
-            <input type="text" id="loginUsername" placeholder="Kullanıcı Adı">
-            <input type="password" id="loginPassword" placeholder="Şifre">
-            <button onclick="login()">Giriş Yap</button>
-            <div class="result" id="loginResult"></div>
-        </div>
-        
-        <div id="registerForm" class="hidden">
-            <h2>Kayıt Ol</h2>
-            <input type="text" id="registerUsername" placeholder="Kullanıcı Adı">
-            <input type="password" id="registerPassword" placeholder="Şifre">
-            <input type="password" id="registerConfirmPassword" placeholder="Şifre Tekrar">
-            <button onclick="register()">Kayıt Ol</button>
-            <div class="result" id="registerResult"></div>
-        </div>
+    <!-- Gizli Galeri -->
+    <div class="secret-container">
+        <h1>Gizli Galeri</h1>
+        <input type="file" id="fileInput" multiple>
+        <button onclick="uploadFiles()">Dosyaları Yükle</button>
+        <div class="gallery-container" id="galleryContainer"></div>
+        <button onclick="openNotesPage()">Not Defterini Aç</button>
+        <button onclick="openTrashPage()">Çöp Kutusunu Aç</button>
+        <button onclick="logout()">Çıkış</button>
+    </div>
+
+    <!-- Not Defteri -->
+    <div id="notesPage" class="notes-page">
+        <h2>Not Defteri</h2>
+        <textarea id="noteText"></textarea>
+        <button onclick="saveNote()">Kaydet</button>
+        <button onclick="closeNotesPage()">Geri</button>
+    </div>
+
+    <!-- Çöp Kutusu -->
+    <div id="trashPage" class="trash-page">
+        <h2>Çöp Kutusu</h2>
+        <div class="trash-container" id="trashContainer"></div>
+        <button onclick="clearTrash()">Çöp Kutusunu Boşalt</button>
+        <button onclick="closeTrashPage()">Geri</button>
     </div>
 
     <script>
-        // Gizli numaralar
-        const secretNumber1 = 1;
-        const secretNumber2 = 42;
-        
-        // IndexedDB ayarları
-        const DB_NAME = 'SecretAppDB';
-        const DB_VERSION = 1;
-        const USER_STORE_NAME = 'users';
-        let db;
+        // Kayıt ve Giriş Fonksiyonları
+        const loginForm = document.getElementById('loginForm');
+        const loginResult = document.getElementById('loginResult');
 
-        // IndexedDB'yi başlat
-        function initDB() {
-            return new Promise((resolve, reject) => {
-                const request = indexedDB.open(DB_NAME, DB_VERSION);
+        loginForm.addEventListener('submit', function (e) {
+            e.preventDefault();
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
 
-                request.onerror = (event) => {
-                    console.error("IndexedDB hatası:", event.target.error);
-                    reject("Veritabanı açılamadı");
-                };
+            // Kullanıcı verilerini localStorage'da kaydet
+            const storedUsername = localStorage.getItem('username');
+            const storedPassword = localStorage.getItem('password');
 
-                request.onsuccess = (event) => {
-                    db = event.target.result;
-                    console.log("Veritabanı başarıyla açıldı");
-                    resolve();
-                };
-
-                request.onupgradeneeded = (event) => {
-                    const db = event.target.result;
-                    if (!db.objectStoreNames.contains(USER_STORE_NAME)) {
-                        const store = db.createObjectStore(USER_STORE_NAME, { keyPath: 'username' });
-                        console.log("Kullanıcı veritabanı oluşturuldu");
-                    }
-                };
-            });
-        }
-
-        // Kullanıcı kaydet
-        async function registerUser(username, password) {
-            return new Promise((resolve, reject) => {
-                if (!db) {
-                    reject("Veritabanı bağlantısı yok");
-                    return;
+            if (storedUsername && storedPassword) {
+                // Giriş kontrolü
+                if (username === storedUsername && password === storedPassword) {
+                    loginResult.textContent = "Başarılı giriş!";
+                    document.querySelector('.login-container').style.display = 'none';
+                    document.querySelector('.calculator').style.display = 'block';
+                } else {
+                    loginResult.textContent = "Hatalı kullanıcı adı veya şifre!";
                 }
-
-                const transaction = db.transaction([USER_STORE_NAME], 'readwrite');
-                const store = transaction.objectStore(USER_STORE_NAME);
-
-                const request = store.add({ username, password });
-
-                request.onsuccess = () => {
-                    resolve(true);
-                };
-
-                request.onerror = (event) => {
-                    if (event.target.error.name === 'ConstraintError') {
-                        reject("Bu kullanıcı adı zaten alınmış");
-                    } else {
-                        reject("Kayıt sırasında hata oluştu");
-                    }
-                };
-            });
-        }
-
-        // Kullanıcı doğrula
-        async function verifyUser(username, password) {
-            return new Promise((resolve, reject) => {
-                if (!db) {
-                    reject("Veritabanı bağlantısı yok");
-                    return;
-                }
-
-                const transaction = db.transaction([USER_STORE_NAME], 'readonly');
-                const store = transaction.objectStore(USER_STORE_NAME);
-
-                const request = store.get(username);
-
-                request.onsuccess = (event) => {
-                    const user = event.target.result;
-                    if (user && user.password === password) {
-                        resolve(true);
-                    } else {
-                        reject("Kullanıcı adı veya şifre hatalı");
-                    }
-                };
-
-                request.onerror = (event) => {
-                    reject("Giriş sırasında hata oluştu");
-                };
-            });
-        }
-
-        // Sayfa yüklendiğinde veritabanını başlat
-        window.addEventListener('DOMContentLoaded', async () => {
-            try {
-                await initDB();
-                // Oturum kontrolü yap
-                const loggedInUser = localStorage.getItem('loggedInUser');
-                if (loggedInUser) {
-                    document.getElementById('calculatorContainer').classList.add('hidden');
-                    document.getElementById('authContainer').classList.remove('hidden');
-                    switchTab('login');
-                }
-            } catch (error) {
-                console.error("Veritabanı başlatılamadı:", error);
-                alert("Uygulama başlatılırken bir hata oluştu. Lütfen sayfayı yenileyin.");
+            } else {
+                // Yeni kullanıcı kaydetme
+                localStorage.setItem('username', username);
+                localStorage.setItem('password', password);
+                loginResult.textContent = "Kayıt başarılı! Giriş yapabilirsiniz.";
             }
         });
 
+        // Hesap Makinesi Fonksiyonları
         function calculate(operation) {
             const num1 = parseFloat(document.getElementById('num1').value);
             const num2 = parseFloat(document.getElementById('num2').value);
             const resultElement = document.getElementById('result');
-
-            if (isNaN(num1) || isNaN(num2)) {
-                resultElement.textContent = "Lütfen geçerli sayılar girin.";
-                return;
-            }
-
             let result;
+
             switch (operation) {
                 case 'add':
                     result = num1 + num2;
-                    if (num1 === secretNumber1 && num2 === secretNumber2) {
-                        showAuthContainer();
-                        return;
-                    }
                     break;
                 case 'subtract':
                     result = num1 - num2;
@@ -252,96 +163,78 @@
                     result = num1 * num2;
                     break;
                 case 'divide':
-                    if (num2 === 0) {
-                        resultElement.textContent = "Bir sayı sıfıra bölünemez!";
-                        return;
-                    }
                     result = num1 / num2;
                     break;
-                default:
-                    result = "Geçersiz işlem.";
             }
             resultElement.textContent = `Sonuç: ${result}`;
         }
 
-        function showAuthContainer() {
-            document.getElementById('calculatorContainer').classList.add('hidden');
-            document.getElementById('authContainer').classList.remove('hidden');
-            switchTab('login');
-        }
+        // Gizli Galeri Fonksiyonları
+        function uploadFiles() {
+            const fileInput = document.getElementById('fileInput');
+            const files = fileInput.files;
+            const galleryContainer = document.getElementById('galleryContainer');
 
-        function switchTab(tab) {
-            if (tab === 'login') {
-                document.getElementById('loginTab').classList.add('active');
-                document.getElementById('registerTab').classList.remove('active');
-                document.getElementById('loginForm').classList.remove('hidden');
-                document.getElementById('registerForm').classList.add('hidden');
-            } else {
-                document.getElementById('loginTab').classList.remove('active');
-                document.getElementById('registerTab').classList.add('active');
-                document.getElementById('loginForm').classList.add('hidden');
-                document.getElementById('registerForm').classList.remove('hidden');
+            for (const file of files) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    const galleryItem = document.createElement('div');
+                    galleryItem.classList.add('gallery-item');
+
+                    const img = document.createElement('img');
+                    img.src = e.target.result;
+                    galleryItem.appendChild(img);
+
+                    galleryContainer.appendChild(galleryItem);
+                };
+                reader.readAsDataURL(file);
             }
         }
 
-        async function register() {
-            const username = document.getElementById('registerUsername').value.trim();
-            const password = document.getElementById('registerPassword').value;
-            const confirmPassword = document.getElementById('registerConfirmPassword').value;
-            const resultElement = document.getElementById('registerResult');
-
-            if (!username || !password || !confirmPassword) {
-                resultElement.textContent = "Lütfen tüm alanları doldurun";
-                return;
-            }
-
-            if (password !== confirmPassword) {
-                resultElement.textContent = "Şifreler eşleşmiyor";
-                return;
-            }
-
-            if (password.length < 6) {
-                resultElement.textContent = "Şifre en az 6 karakter olmalı";
-                return;
-            }
-
-            try {
-                await registerUser(username, password);
-                resultElement.textContent = "Kayıt başarılı! Giriş yapabilirsiniz";
-                resultElement.style.color = "#4CAF50";
-                switchTab('login');
-            } catch (error) {
-                resultElement.textContent = error;
-                resultElement.style.color = "#f44336";
-            }
+        // Not Defteri Fonksiyonları
+        function openNotesPage() {
+            document.querySelector('.calculator').style.display = 'none';
+            document.querySelector('.secret-container').style.display = 'none';
+            document.getElementById('notesPage').style.display = 'block';
         }
 
-        async function login() {
-            const username = document.getElementById('loginUsername').value.trim();
-            const password = document.getElementById('loginPassword').value;
-            const resultElement = document.getElementById('loginResult');
+        function closeNotesPage() {
+            document.getElementById('notesPage').style.display = 'none';
+            document.querySelector('.secret-container').style.display = 'block';
+        }
 
-            if (!username || !password) {
-                resultElement.textContent = "Lütfen tüm alanları doldurun";
-                return;
-            }
+        function saveNote() {
+            const noteText = document.getElementById('noteText').value;
+            localStorage.setItem('note', noteText);
+            alert("Not kaydedildi!");
+        }
 
-            try {
-                await verifyUser(username, password);
-                resultElement.textContent = "Giriş başarılı!";
-                resultElement.style.color = "#4CAF50";
-                
-                // Oturum bilgisini sakla
-                localStorage.setItem('loggedInUser', username);
-                
-                // 2 saniye sonra ana uygulamaya yönlendir
-                setTimeout(() => {
-                    window.location.href = "main_app.html"; // Ana uygulama sayfası
-                }, 2000);
-            } catch (error) {
-                resultElement.textContent = error;
-                resultElement.style.color = "#f44336";
-            }
+        // Çıkış Fonksiyonu
+        function logout() {
+            document.querySelector('.calculator').style.display = 'none';
+            document.querySelector('.secret-container').style.display = 'none';
+            document.getElementById('notesPage').style.display = 'none';
+            document.getElementById('trashPage').style.display = 'none';
+            document.querySelector('.login-container').style.display = 'block';
+        }
+
+        // Çöp Kutusu Fonksiyonları
+        function openTrashPage() {
+            document.querySelector('.calculator').style.display = 'none';
+            document.querySelector('.secret-container').style.display = 'none';
+            document.getElementById('notesPage').style.display = 'none';
+            document.getElementById('trashPage').style.display = 'block';
+        }
+
+        function closeTrashPage() {
+            document.getElementById('trashPage').style.display = 'none';
+            document.querySelector('.secret-container').style.display = 'block';
+        }
+
+        function clearTrash() {
+            const trashContainer = document.getElementById('trashContainer');
+            trashContainer.innerHTML = '';
+            alert("Çöp kutusu boşaltıldı!");
         }
     </script>
 </body>
