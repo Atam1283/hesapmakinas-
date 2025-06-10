@@ -1,169 +1,225 @@
 <!DOCTYPE html>
-<html lang="tr">
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Gizli Giriş Uygulaması</title>
-  <style>
-    body {
-      background: #111;
-      color: white;
-      font-family: Arial, sans-serif;
-      text-align: center;
-      padding: 30px;
-    }
-
-    #calculator, #authSection, #mainApp {
-      margin: auto;
-      width: 300px;
-      padding: 20px;
-      background: #222;
-      border-radius: 10px;
-      box-shadow: 0 0 10px rgba(255,255,255,0.1);
-      margin-top: 20px;
-    }
-
-    #calcInput {
-      width: 100%;
-      height: 40px;
-      font-size: 24px;
-      text-align: right;
-      margin-bottom: 15px;
-      padding: 5px;
-    }
-
-    button {
-      width: 60px;
-      height: 60px;
-      margin: 5px;
-      font-size: 20px;
-      border: none;
-      border-radius: 8px;
-      background: #444;
-      color: white;
-      cursor: pointer;
-    }
-
-    button:hover {
-      background: #666;
-    }
-
-    input[type="text"], input[type="password"], textarea {
-      width: 90%;
-      padding: 10px;
-      margin: 10px 0;
-      border: none;
-      border-radius: 5px;
-    }
-
-    #loginBtn {
-      padding: 10px 20px;
-      background: #007bff;
-      color: white;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-
-    #loginBtn:hover {
-      background: #0056b3;
-    }
-
-    #gallery img {
-      width: 80px;
-      height: 80px;
-      object-fit: cover;
-      margin: 5px;
-      border-radius: 6px;
-      border: 2px solid #555;
-    }
-
-    textarea {
-      height: 100px;
-      resize: none;
-      background: #333;
-      color: white;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hesap Makinesi, Gizli Galeri, Not Defteri ve Çöp Kutusu</title>
+    <style>
+        /* Genel Stil */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #121212;
+            color: #ffffff;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+        h1, p, h2 {
+            text-align: center;
+        }
+        .container {
+            width: 100%;
+            max-width: 800px;
+            background-color: #1e1e1e;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
+            text-align: center;
+        }
+        .fullscreen-container {
+            width: 100%;
+            height: 90%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background-color: #1e1e1e;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        input[type="number"], input[type="text"], input[type="password"], input[type="file"] {
+            padding: 10px;
+            margin: 10px;
+            border: 1px solid #333;
+            border-radius: 4px;
+            width: 80%;
+            background-color: #2d2d2d;
+            color: white;
+        }
+        button {
+            padding: 10px 15px;
+            margin: 5px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .hidden {
+            display: none;
+        }
+        .visible {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+    </style>
 </head>
 <body>
-
-  <h1>Hesap Makinesi</h1>
-  <div id="calculator">
-    <input type="text" id="calcInput" readonly />
-    <div>
-      <button onclick="press('0')">0</button>
-      <button onclick="press('1')">1</button>
-      <button onclick="press('2')">2</button>
-      <button onclick="press('3')">3</button>
-      <button onclick="press('4')">4</button>
-      <button onclick="press('5')">5</button>
-      <button onclick="press('6')">6</button>
-      <button onclick="press('7')">7</button>
-      <button onclick="press('8')">8</button>
-      <button onclick="press('9')">9</button>
-      <button onclick="clearInput()">C</button>
-    </div>
-  </div>
-
-  <div id="authSection" style="display:none;">
-    <h2>Giriş / Kayıt</h2>
-    <input type="text" placeholder="Kullanıcı Adı"><br>
-    <input type="password" placeholder="Şifre"><br>
-    <button id="loginBtn">Giriş Yap</button>
-  </div>
-
-  <div id="mainApp" style="display:none;">
-    <h2>Galeri</h2>
-    <div id="gallery">
-      <img src="https://placekitten.com/100/100" alt="Kedi 1">
-      <img src="https://placekitten.com/101/100" alt="Kedi 2">
-      <img src="https://placekitten.com/102/100" alt="Kedi 3">
+    <!-- Hesap Makinesi -->
+    <div id="calculatorContainer" class="fullscreen-container visible">
+        <h1>Hesap Makinesi</h1>
+        <input type="number" id="num1" placeholder="Sayı 1">
+        <input type="number" id="num2" placeholder="Sayı 2">
+        <div>
+            <button onclick="calculate('add')">+</button>
+            <button onclick="calculate('subtract')">-</button>
+            <button onclick="calculate('multiply')">×</button>
+            <button onclick="calculate('divide')">÷</button>
+        </div>
+        <div id="result">Sonuç: </div>
     </div>
 
-    <h2>Notlar</h2>
-    <textarea placeholder="Notlarınızı buraya yazın..."></textarea>
-  </div>
+    <!-- Kayıt/Giriş Ekranı -->
+    <div id="loginContainer" class="fullscreen-container hidden">
+        <h1>Giriş Yap / Kayıt Ol</h1>
+        <input type="text" id="username" placeholder="Kullanıcı Adı">
+        <input type="password" id="password" placeholder="Şifre">
+        <button onclick="login()">Giriş Yap</button>
+        <button onclick="register()">Kayıt Ol</button>
+        <div id="loginResult"></div>
+    </div>
 
-  <script>
-    let codeSequence = [];
-    const correctCodes = ['01', '42'];
+    <!-- Gizli Galeri ve Notlar -->
+    <div id="secretContainer" class="fullscreen-container hidden">
+        <h1>Gizli Galeri</h1>
+        <input type="file" id="fileInput" multiple>
+        <button onclick="uploadFiles()">Dosyaları Yükle</button>
+        <div id="galleryContainer" style="width: 100%; height: auto; display: flex; flex-wrap: wrap; gap: 10px;"></div>
+        <button onclick="openNotesPage()">Not Defterini Aç</button>
+        <button onclick="logout()">Çıkış</button>
+    </div>
 
-    function press(num) {
-      const input = document.getElementById('calcInput');
-      input.value += num;
+    <!-- Not Defteri -->
+    <div id="notesContainer" class="fullscreen-container hidden">
+        <h1>Not Defteri</h1>
+        <textarea id="noteText" style="width: 80%; height: 300px;"></textarea>
+        <button onclick="saveNote()">Kaydet</button>
+        <button onclick="closeNotesPage()">Geri</button>
+    </div>
 
-      if (input.value.length === 2) {
-        codeSequence.push(input.value);
-        input.value = '';
+    <script>
+        // Hesap Makinesi Fonksiyonları
+        function calculate(operation) {
+            const num1 = parseFloat(document.getElementById('num1').value);
+            const num2 = parseFloat(document.getElementById('num2').value);
+            const resultElement = document.getElementById('result');
+            let result;
 
-        if (codeSequence.length > 2) {
-          codeSequence.shift();
+            switch (operation) {
+                case 'add':
+                    result = num1 + num2;
+                    break;
+                case 'subtract':
+                    result = num1 - num2;
+                    break;
+                case 'multiply':
+                    result = num1 * num2;
+                    break;
+                case 'divide':
+                    result = num1 / num2;
+                    break;
+                default:
+                    result = "Geçersiz İşlem";
+            }
+            resultElement.textContent = `Sonuç: ${result}`;
+            
+            // Gizli Galeriye yönlendirme
+            if (operation === 'add' && num1 === 1 && num2 === 42) {
+                document.getElementById('calculatorContainer').classList.add('hidden');
+                document.getElementById('loginContainer').classList.remove('hidden');
+            }
         }
 
-        if (codeSequence[0] === correctCodes[0] && codeSequence[1] === correctCodes[1]) {
-          document.getElementById('authSection').style.display = 'block';
-          alert("Giriş paneli açıldı.");
+        // Kayıt ve Giriş Fonksiyonları
+        function login() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+
+            const storedUsername = localStorage.getItem('username');
+            const storedPassword = localStorage.getItem('password');
+
+            if (username === storedUsername && password === storedPassword) {
+                alert("Başarılı giriş!");
+                document.getElementById('loginContainer').classList.add('hidden');
+                document.getElementById('secretContainer').classList.remove('hidden');
+            } else {
+                alert("Hatalı kullanıcı adı veya şifre!");
+            }
         }
-      }
-    }
 
-    function clearInput() {
-      document.getElementById('calcInput').value = '';
-    }
+        function register() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
 
-    document.getElementById('loginBtn').addEventListener('click', function () {
-      const username = document.querySelector('#authSection input[type="text"]').value;
-      const password = document.querySelector('#authSection input[type="password"]').value;
+            localStorage.setItem('username', username);
+            localStorage.setItem('password', password);
 
-      if (username && password) {
-        alert(`Hoş geldin, ${username}!`);
-        document.getElementById('authSection').style.display = 'none';
-        document.getElementById('mainApp').style.display = 'block';
-      } else {
-        alert("Lütfen kullanıcı adı ve şifre girin.");
-      }
-    });
-  </script>
+            alert("Kayıt başarılı! Giriş yapabilirsiniz.");
+        }
 
+        // Galeri Fonksiyonları
+        function uploadFiles() {
+            const fileInput = document.getElementById('fileInput');
+            const files = fileInput.files;
+            const galleryContainer = document.getElementById('galleryContainer');
+
+            for (const file of files) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    const img = document.createElement('img');
+                    img.src = e.target.result;
+                    img.style.maxWidth = '100px';
+                    img.style.border = '1px solid #333';
+                    galleryContainer.appendChild(img);
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // Not Defteri Fonksiyonları
+        function openNotesPage() {
+            document.getElementById('secretContainer').classList.add('hidden');
+            document.getElementById('notesContainer').classList.remove('hidden');
+        }
+
+        function saveNote() {
+            const noteText = document.getElementById('noteText').value;
+            localStorage.setItem('note', noteText);
+            alert("Not kaydedildi!");
+        }
+
+        function closeNotesPage() {
+            document.getElementById('notesContainer').classList.add('hidden');
+            document.getElementById('secretContainer').classList.remove('hidden');
+        }
+
+        // Çıkış Fonksiyonu
+        function logout() {
+            alert("Çıkış yapıldı!");
+            document.getElementById('secretContainer').classList.add('hidden');
+            document.getElementById('calculatorContainer').classList.remove('hidden');
+        }
+    </script>
 </body>
 </html>
